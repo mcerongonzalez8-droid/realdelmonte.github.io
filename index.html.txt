@@ -1,0 +1,2473 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real del Monte - App Transmedia</title>
+  
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+
+  <style>
+    /* =========================================
+       1. RESET Y ESTRUCTURA GENERAL
+       ========================================= */
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* =========================================
+       2. MARCO DEL TELÉFONO (PHONE FRAME)
+       ========================================= */
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: #000;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 6px rgba(255,255,255,0.1);
+      position: relative;
+      border: 3px solid #2a2a2a;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 30px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .speaker {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 6px;
+      background: #1a1a1a;
+      border-radius: 3px;
+    }
+
+    .camera {
+      position: absolute;
+      top: 8px;
+      right: 80px;
+      width: 12px;
+      height: 12px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid #333;
+    }
+
+    .app-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* =========================================
+       3. HEADER DE LA APP
+       ========================================= */
+    .app-header {
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/7a/Plaza_Principal%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_01.JPG');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 40px 20px 20px 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 140px;
+    }
+    
+    .app-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 0;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-header p {
+      margin: 8px 0 0 0;
+      font-size: 12px;
+      opacity: 0.95;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Área Principal de Contenido */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+
+    /* Control de Secciones (Mostrar/Ocultar) */
+    .home-section, .routes-section, .detail-section, .gastronomy-section, .community-section, 
+    .profile-section, .festival-section, .leyendas-section, .tour-section, .parroquia-section, 
+    .museo-paste-section, .casa-grande-section, .mina-acosta-section, .bosque-hiloche-section, 
+    .mercado-section, .mina-dificultad-section, .callejon-section, .restaurant-detail-section {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+
+    /* =========================================
+       4. COMPONENTES: HOME (CARRUSEL Y GRID)
+       ========================================= */
+    /* Carousel */
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      background: #f5f5f5;
+      touch-action: pan-y;
+    }
+
+    .carousel-wrapper {
+      display: flex;
+      transition: transform 0.3s ease;
+      height: 100%;
+      cursor: grab;
+    }
+
+    .carousel-wrapper.dragging {
+      transition: none;
+      cursor: grabbing;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .carousel-slide::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+    }
+
+    .carousel-content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .carousel-content h2 {
+      margin: 0;
+      font-size: 24px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .carousel-indicators {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .indicator.active {
+      background: white;
+    }
+
+    /* Grid Principal */
+    .grid-section {
+      padding: 20px;
+    }
+
+    .grid-section h2 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .grid-item {
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;
+    }
+
+    .grid-item:active {
+      transform: scale(0.95);
+      background: #f0f0f0;
+      border-color: #667eea;
+    }
+
+    .grid-item-icon {
+      width: 45px;
+      height: 45px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .grid-item-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    /* =========================================
+       AGREGADO: ESTILOS DE GASTRO
+       ========================================= */
+    .gastronomy-section { padding: 20px; }
+    .gastronomy-title { font-size: 24px; font-weight: 700; color: #333; margin: 0 0 20px 0; }
+    
+    /* Tarjeta de Restaurante */
+    .resto-card {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      cursor: pointer;
+      border: 1px solid #f0f0f0;
+    }
+    .resto-card:active { transform: scale(0.98); }
+    .resto-image {
+      width: 80px; height: 80px;
+      border-radius: 12px; object-fit: cover;
+      margin-right: 15px; background: #eee;
+    }
+    .resto-info { flex: 1; }
+    .resto-name {
+      font-size: 16px; font-weight: 700; color: #333; margin: 0 0 4px 0;
+      display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .resto-type { font-size: 12px; color: #888; margin: 0 0 8px 0; }
+    .resto-meta { display: flex; align-items: center; gap: 12px; }
+    .meta-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #555; font-weight: 600; }
+    .meta-icon-star { color: #ffc107; font-size: 14px; }
+    .meta-icon-dist { color: #667eea; font-size: 14px; }
+    .resto-action {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #f5f5f5; display: flex; align-items: center; justify-content: center;
+      color: #ff5e62; font-size: 16px;
+    }
+
+    /* Detalles del Restaurante */
+    .resto-detail-header { height: 250px; position: relative; }
+    .resto-detail-header img { width: 100%; height: 100%; object-fit: cover; }
+    .map-button {
+      background: #34d399; color: white; border: none; padding: 12px;
+      border-radius: 12px; width: 100%; font-weight: 600; font-size: 16px;
+      margin-top: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    /* =========================================
+       5. COMPONENTES: RUTAS Y LISTAS
+       ========================================= */
+    .filters-container {
+      padding: 15px 20px;
+      background: #f9f9f9;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .filter-chip {
+      padding: 8px 16px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 20px;
+      font-size: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .filter-chip.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .routes-list {
+      padding: 20px;
+    }
+
+    .route-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .route-card:active {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .route-card.hidden-card {
+      display: none;
+    }
+
+    .route-card h3 {
+      margin: 0 0 8px 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .route-meta {
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .route-description {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* =========================================
+       6. COMPONENTES: DETALLES, HEROS Y CONTENIDO
+       ========================================= */
+    .detail-header, .festival-hero {
+      position: relative;
+      height: 250px;
+      background: #333;
+    }
+
+    .detail-header img, .festival-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+
+    .back-button:active {
+      background: white;
+      transform: scale(0.9);
+    }
+
+    .detail-content, .festival-content {
+      padding: 20px;
+    }
+
+    .detail-title, .festival-title {
+      font-size: 26px;
+      margin: 0 0 10px 0;
+      color: #333;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .festival-subtitle {
+      font-size: 16px;
+      color: #666;
+      margin: 0 0 25px 0;
+      line-height: 1.5;
+    }
+
+    .detail-rating {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stars {
+      color: #ffc107;
+      font-size: 20px;
+    }
+
+    .rating-text {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .festival-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, #fff5e6 0%, #ffe6f0 100%);
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      font-size: 15px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .detail-description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #444;
+      margin-bottom: 30px;
+    }
+
+    .detail-info-block, .info-card {
+      margin-bottom: 25px;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .detail-info-block h3, .info-card h3 {
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .detail-info-block ul, .info-card ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .detail-info-block li, .info-card li {
+      margin-bottom: 5px;
+      font-size: 15px;
+      color: #555;
+    }
+
+    /* Reproductor de Audio */
+    .audio-player {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .play-button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #667eea;
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .play-button:active {
+      background: #5568d3;
+      transform: scale(0.95);
+    }
+
+    .audio-info {
+      flex: 1;
+    }
+
+    .audio-title {
+      font-weight: 600;
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+
+    .audio-duration {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+
+    /* Galerías */
+    .ugc-section { margin-bottom: 30px; }
+    .ugc-section h3 { font-size: 20px; margin: 0 0 15px 0; color: #333; }
+
+    .ugc-gallery, .festival-gallery, .tour-gallery {
+      display: grid;
+      gap: 10px;
+    }
+    
+    .ugc-gallery { grid-template-columns: repeat(3, 1fr); margin-bottom: 20px; }
+    .festival-gallery { grid-template-columns: repeat(2, 1fr); margin: 20px 0; }
+    .tour-gallery { grid-template-columns: repeat(3, 1fr); margin: 20px 0; }
+
+    .ugc-image {
+      aspect-ratio: 1;
+      background: #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .ugc-image img { width: 100%; height: 100%; object-fit: cover; }
+
+    .gallery-item {
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .gallery-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+      padding: 20px 10px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Tarjetas de Reseñas */
+    .review-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .reviewer-name { font-weight: 600; color: #333; }
+    .review-stars { color: #ffc107; font-size: 14px; }
+    .review-text { font-size: 14px; color: #666; line-height: 1.5; margin: 0; }
+
+    /* Botones CTA */
+    .cta-button {
+      width: 100%;
+      padding: 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+    }
+    
+    .cta-button:active { background: #5568d3; transform: translateY(-2px); }
+
+    /* =========================================
+       7. COMPONENTES: COMUNIDAD, PERFIL Y MODALES
+       ========================================= */
+    .feed-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .feed-header { padding: 15px; display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+    .feed-user-info { flex: 1; }
+    .feed-user-name { font-weight: 600; color: #333; margin: 0 0 3px 0; }
+    .feed-location { font-size: 12px; color: #666; margin: 0; }
+    .feed-image { width: 100%; height: 300px; background: #e0e0e0; }
+    .feed-content { padding: 15px; }
+    .feed-text { font-size: 14px; color: #333; line-height: 1.5; margin: 0 0 10px 0; }
+    .feed-actions { display: flex; gap: 20px; }
+    .feed-action { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #666; cursor: pointer; }
+
+    /* Perfil */
+    .profile-header { text-align: center; margin-bottom: 30px; }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: 600; }
+    .profile-name { font-size: 24px; font-weight: 600; color: #333; margin: 0 0 5px 0; }
+    .profile-email { font-size: 14px; color: #666; margin: 0; }
+    .stats-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; padding: 0 20px; }
+    .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .stat-number { font-size: 28px; font-weight: 700; color: #667eea; margin: 0 0 5px 0; }
+    .stat-label { font-size: 12px; color: #666; margin: 0; }
+
+    /* ESTILOS DE ACCESIBILIDAD Y PERFIL (AGREGADO) */
+    .access-btn { flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 8px; color: #333; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+    .access-btn:active { background: #e0e0e0; }
+    
+    .history-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f9f9f9; border-radius: 12px; margin-bottom: 10px; }
+    .history-icon { font-size: 20px; }
+    .history-title { font-weight: 600; margin: 0; font-size: 14px; color: #333; }
+    .history-status { font-size: 12px; color: #666; margin: 2px 0 0; }
+
+    /* Clases para modo alto contraste y letra grande */
+    body.high-contrast .app-container { background: #000; color: #fff; }
+    body.high-contrast .profile-name, body.high-contrast h1, body.high-contrast h2, body.high-contrast h3, body.high-contrast .history-title, body.high-contrast .stat-number { color: #fff !important; }
+    body.high-contrast .stat-card, body.high-contrast .history-item, body.high-contrast .access-btn { background: #333; color: #fff; border: 1px solid #fff; }
+    body.high-contrast .stat-label, body.high-contrast .history-status, body.high-contrast .profile-email { color: #ccc; }
+    body.high-contrast .bottom-nav { background: #000; border-top: 1px solid #fff; }
+    
+    body.large-font .content-area { font-size: 1.2em; }
+    body.large-font h1, body.large-font h2, body.large-font h3 { font-size: 1.3em; }
+    body.large-font p, body.large-font span, body.large-font button { font-size: 1.1em; }
+
+    /* Navegación Inferior */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      border-radius: 0 0 32px 32px;
+    }
+
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 5px; cursor: pointer; transition: all 0.3s; border: none; background: transparent; color: #999; }
+    .nav-item.active { color: #667eea; }
+    .nav-icon { font-size: 24px; }
+    .nav-label { font-size: 12px; font-weight: 500; }
+
+    /* Botón Flotante y Modales */
+    .floating-button { position: absolute; bottom: 90px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; z-index: 100; }
+    .floating-button:active { transform: scale(0.9); background: #5568d3; }
+
+    /* ESTILO PARA EL BOTÓN DE CÁMARA (AGREGADO) */
+    .camera-btn {
+      width: 100%;
+      background: #2a2a2a;
+      color: white;
+      border: none;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #444;
+      z-index: 90;
+    }
+    .camera-btn:active { background: #1a1a1a; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: white; border-radius: 16px; padding: 30px; width: 90%; max-width: 400px; position: relative; }
+    .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal-title { font-size: 22px; font-weight: 600; margin: 0 0 20px 0; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
+    .form-input, .form-textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; transition: border-color 0.3s; }
+    .form-textarea { min-height: 100px; resize: vertical; }
+    .submit-button { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    
+    .image-modal-content { background: white; border-radius: 16px; padding: 20px; width: 95%; max-width: 600px; position: relative; max-height: 90%; overflow-y: auto; }
+    .image-modal-content img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 15px; }
+    #modal-image-caption { text-align: center; font-size: 18px; font-weight: 600; color: #333; margin: 0; }
+
+    .toast { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 3000; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .grid-container { grid-template-columns: repeat(3, 1fr); }
+      /*.stats-container { grid-template-columns: repeat(3, 1fr); } ELIMINADO PARA EL NUEVO DISEÑO */
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style></head><body>
+  <div class="phone-frame">
+    <div class="phone-notch">
+      <div class="speaker"></div>
+      <div class="camera"></div>
+    </div>
+    <div class="app-container">
+      
+      <header class="app-header">
+        <h1 id="app-title">Real del Monte</h1>
+        <p id="welcome-text">Vive la experiencia única del Real del Monte, un pueblo mágico con mucha historia</p>
+      </header>
+
+      <main class="content-area" id="content-area">
+
+        <section class="home-section active" id="home-section">
+          <div class="carousel-container">
+            <div class="carousel-wrapper" id="carousel-wrapper">
+              <div class="carousel-slide" style="background-image: url('https://images.milenio.com/F4-ia3mVxs8UvYIc7NJTb-CMhf4=/345x194/uploads/media/2018/10/15/olor-paste-inundo-principales-calles.jpg');" onclick="navigateToFestival()">
+                <div class="carousel-content">
+                  <h2 id="event-1-title">Festival del Paste</h2>
+                </div>
+              </div>
+              <div class="carousel-slide" style="background-image: url('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/7c/d9/8e/caption.jpg?w=1800&h=1400&s=1'); background-size: cover; background-position: center;" onclick="navigateToLeyendas()">
+                <div class="carousel-content">
+                  <h2 id="event-2-title">Noche de Leyendas</h2>
+                </div>
+              </div>
+              <div class="carousel-slide" style="background-image: url('https://i0.wp.com/foodandpleasure.com/wp-content/uploads/2022/06/mineral-de-monte-mineraldeacosta.jpg?resize=768%2C471&ssl=1'); background-size: cover; background-position: center;" onclick="navigateToTour()">
+                <div class="carousel-content">
+                  <h2 id="event-3-title">Tour Minero Especial</h2>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-indicators" id="carousel-indicators">
+              <span class="indicator active" data-slide="0"></span>
+              <span class="indicator" data-slide="1"></span>
+              <span class="indicator" data-slide="2"></span>
+            </div>
+          </div>
+
+          <div class="grid-section">
+            <h2>Explora</h2>
+            <div class="grid-container">
+              <div class="grid-item" onclick="navigateToDetail('panteon')">
+                <div class="grid-item-icon">⛪</div>
+                <p class="grid-item-title">Panteón Inglés</p>
+              </div>
+              <div class="grid-item" onclick="showSection('routes')">
+                <div class="grid-item-icon">🗺️</div>
+                <p class="grid-item-title">Sitios</p>
+              </div>
+              <div class="grid-item" onclick="showSection('gastronomy')">
+                <div class="grid-item-icon">🥟</div>
+                <p class="grid-item-title">Gastronomía</p>
+              </div>
+              <div class="grid-item" onclick="navigateToDetail('minas')">
+                <div class="grid-item-icon">⛏️</div>
+                <p class="grid-item-title">Minas</p>
+              </div>
+              <div class="grid-item" onclick="showSection('community')">
+                <div class="grid-item-icon">📸</div>
+                <p class="grid-item-title">Comunidad</p>
+              </div>
+              <div class="grid-item" onclick="navigateToDetail('leyendas')">
+                <div class="grid-item-icon">👻</div>
+                <p class="grid-item-title">Leyendas</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="gastronomy-section" id="gastronomy-section">
+          <h2 class="gastronomy-title">Gastronomía Local</h2>
+          <div id="gastronomy-list-container"></div>
+        </section>
+
+        <section class="restaurant-detail-section" id="restaurant-detail-section">
+          <div class="detail-header" id="resto-detail-img-container">
+            <button class="back-button" onclick="goBackToGastro()">←</button>
+            <img id="resto-detail-img" src="" alt="">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title" id="resto-detail-title"></h1>
+            <div class="detail-rating">
+              <span class="stars" id="resto-detail-stars"></span>
+              <span class="rating-text" id="resto-detail-rating-text"></span>
+            </div>
+            <p class="detail-description" id="resto-detail-desc"></p>
+            
+            <button class="map-button" id="resto-map-btn" onclick="">📍 Ver Ubicación en Mapa</button>
+
+            <div class="ugc-section">
+              <h3 style="margin-top:20px;">Reseñas Destacadas</h3>
+              <div id="resto-reviews-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="festival-section" id="festival-section">
+          <div class="festival-hero">
+            <button class="back-button" onclick="goBackToHome()">←</button>
+            <img src="https://www.dondeir.com/wp-content/uploads/2024/06/festival-del-paste-2024-en-real-del-monte.jpg" alt="Festival del Paste" onerror="this.style.display='none';">
+          </div>
+          <div class="festival-content">
+            <span class="festival-badge">🎉 OCTUBRE 2026</span>
+            <h1 class="festival-title">Festival Internacional del Paste</h1>
+            <p class="festival-subtitle">Celebración del hermanamiento con Redruth, Inglaterra</p>
+            <div class="highlight-box">
+              <p><strong>🎊 Próxima edición:</strong> Octubre 2026 en la Plaza Principal de Real del Monte</p>
+            </div>
+            <div class="info-card">
+              <h3>🥟 Lo Mejor del Festival</h3>
+              <ul>
+                <li><strong>Más de 50 expositores</strong> con pastes tradicionales y contemporáneos</li>
+                <li><strong>Música en vivo</strong> y actividades culturales</li>
+                <li><strong>Paste Gigante</strong> elaborado el último día</li>
+                <li><strong>Talleres de preparación</strong> para toda la familia</li>
+              </ul>
+            </div>
+            
+            <div class="festival-gallery">
+              <div class="gallery-item" onclick="openImageModal('https://www.gob.mx/cms/uploads/article/main_image/160229/Comunicado_208__5_.jpg', 'Expositores')" style="cursor: pointer;">
+                <img src="https://www.gob.mx/cms/uploads/article/main_image/160229/Comunicado_208__5_.jpg" alt="Expositores" onerror="this.style.display='none';">
+                <div class="gallery-caption">Expositores</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://tvazteca.brightspotcdn.com/dims4/default/0eb7fea/2147483647/strip/true/crop/1280x728+0+0/resize/992x565!/format/webp/quality/90/?url=http%3A%2F%2Ftv-azteca-brightspot.s3.amazonaws.com%2F64%2F46%2F24c49c464aa797a330380f6befd5%2Fgrupos-musicales-festival-paste-2024.jpg', 'Música en Vivo')" style="cursor: pointer;">
+                <img src="https://tvazteca.brightspotcdn.com/dims4/default/0eb7fea/2147483647/strip/true/crop/1280x728+0+0/resize/992x565!/format/webp/quality/90/?url=http%3A%2F%2Ftv-azteca-brightspot.s3.amazonaws.com%2F64%2F46%2F24c49c464aa797a330380f6befd5%2Fgrupos-musicales-festival-paste-2024.jpg" alt="Música" onerror="this.style.display='none';">
+                <div class="gallery-caption">Música</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://aldianoticias.mx/wp-content/uploads/2018/10/IMG-20181014-WA0038-1280x640.jpg', 'Paste Gigante')" style="cursor: pointer;">
+                <img src="https://aldianoticias.mx/wp-content/uploads/2018/10/IMG-20181014-WA0038-1280x640.jpg" alt="Paste gigante" onerror="this.style.display='none';">
+                <div class="gallery-caption">Paste gigante</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/20140521_718_HGO_REAL_DEL_MONTE_CENTRO_VISTA_DEL_CENTRO_RC-1000x667.jpg', 'Plaza Principal')" style="cursor: pointer;">
+                <img src="https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/20140521_718_HGO_REAL_DEL_MONTE_CENTRO_VISTA_DEL_CENTRO_RC-1000x667.jpg" alt="Plaza" onerror="this.style.display='none';">
+                <div class="gallery-caption">Plaza</div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3>📍 Ubicación</h3>
+              <p><strong>42130, Av. Hidalgo 4, El Hospital</strong><br>42133 Mineral del Monte, Hgo.</p>
+              <div onclick="openGoogleMaps(20.1404, -98.6723, '42130, Av. Hidalgo 4, El Hospital, 42133 Mineral del Monte, Hgo.')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 200px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/K53iygTEjS8NrKLz8" width="100%" height="100%" style="border:0; pointer-events: none;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center;">
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">¿Cómo llegar a Real del Monte?</p>
+                    <button style="background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%;">CÓMO LLEGAR</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3>ℹ️ Más Información</h3>
+              <p><strong>Historia del Festival:</strong> Desde 2011, este festival celebra el hermanamiento entre Real del Monte y Redruth, Inglaterra. Los mineros ingleses trajeron la receta del paste en el siglo XIX, y desde entonces se ha convertido en un símbolo gastronómico de la región.</p>
+              <p style="margin-top: 15px;"><strong>Precio de entrada:</strong> Gratuito</p>
+              <p><strong>Horarios:</strong> Viernes a domingo de 10:00 AM a 8:00 PM</p>
+              <p><strong>Actividades especiales:</strong></p>
+              <ul>
+                <li>Concursos de elaboración de pastes</li>
+                <li>Presentaciones de grupos folclóricos</li>
+                <li>Exposiciones de fotografía histórica</li>
+                <li>Venta de artesanías locales</li>
+              </ul>
+            </div>
+            <button class="cta-button" onclick="window.open('https://www.gob.mx/sectur', '_blank', 'noopener,noreferrer')">Visitar sitio oficial</button>
+          </div>
+        </section>
+
+        <section class="leyendas-section" id="leyendas-section">
+          <div class="festival-hero">
+            <button class="back-button" onclick="goBackToHome()">←</button>
+            <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/7c/d9/8a/caption.jpg?w=1800&h=1400&s=1" alt="Panteón Inglés" onerror="this.style.display='none';">
+          </div>
+          <div class="festival-content">
+            <span class="festival-badge">👻 RECORRIDO NOCTURNO</span>
+            <h1 class="festival-title">Noche de Leyendas</h1>
+            <p class="festival-subtitle">Recorrido nocturno por el Panteón Inglés</p>
+            <div class="highlight-box">
+              <p>La "Noche de Leyendas" en Real del Monte es un recorrido nocturno por el Panteón Inglés para conocer historias y leyendas locales. La actividad, que dura aproximadamente hora y media, se lleva a cabo en el cementerio más antiguo del lugar, buscando crear una atmósfera de misterio e historia.</p>
+            </div>
+            <div class="info-card">
+              <h3>📜 Detalles del recorrido</h3>
+              <ul>
+                <li><strong>Lugar:</strong> Panteón Inglés de Real del Monte.</li>
+                <li><strong>Experiencia:</strong> Sumérgete en leyendas que cobran vida entre las tumbas antiguas.</li>
+                <li><strong>Duración:</strong> Aproximadamente 1 hora y media.</li>
+                <li><strong>Punto de encuentro:</strong> Frente a la iglesia, con salida a las 8:10 p.m.</li>
+              </ul>
+            </div>
+            <div class="festival-gallery">
+              <div class="gallery-item" onclick="openImageModal('https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/20140519_654_HGO_REAL_DEL_MONTE_PASTES_EL_PORTAL_PASTES_CON_PAPA_RC-2-1000x667.jpg', 'Gastronomía local')" style="cursor: pointer;">
+                <img src="https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/20140519_654_HGO_REAL_DEL_MONTE_PASTES_EL_PORTAL_PASTES_CON_PAPA_RC-2-1000x667.jpg" alt="Gastronomía local" onerror="this.style.display='none';">
+                <div class="gallery-caption">Gastronomía local</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://lajornadahidalgo.com/resizer/jWMP0gJjgjmF6Quksv9BSMQ3xdo=/900x0/filters:format(webp)/https://wp.lajornada-hidalgo.prod.andes.news/wp-content/uploads/2023/10/leyendas-hallowwen.jpeg', 'Noche de Leyendas')" style="cursor: pointer;">
+                <img src="https://lajornadahidalgo.com/resizer/jWMP0gJjgjmF6Quksv9BSMQ3xdo=/900x0/filters:format(webp)/https://wp.lajornada-hidalgo.prod.andes.news/wp-content/uploads/2023/10/leyendas-hallowwen.jpeg" alt="Noche de Leyendas" onerror="this.style.display='none';">
+                <div class="gallery-caption">Noche de Leyendas</div>
+              </div>
+            </div>
+            <div class="info-card">
+              <h3>🎒 ¿Cómo prepararse?</h3>
+              <ul>
+                <li>Se recomienda llevar «importe exacto» para la entrada, que se estima en unos <strong>$130 pesos</strong> (los costos pueden variar).</li>
+                <li>El transporte público puede costar alrededor de <strong>$30 pesos</strong> ida y vuelta.</li>
+                <li>Considera dejar propina para los guías y coordinadores.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Panteón Inglés de Real del Monte</strong></p>
+              <div onclick="openGoogleMaps(20.1435, -98.6677, 'Panteón Inglés de Real del Monte')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 350px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/LVZo1JDoTipNJUe76" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar al Panteón Inglés?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tour-section" id="tour-section">
+          <div class="festival-hero">
+            <button class="back-button" onclick="goBackToHome()">←</button>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Mina_de_Acosta%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_04.JPG" alt="Mina de Acosta" onerror="this.style.display='none';">
+          </div>
+          <div class="festival-content">
+            <span class="festival-badge">⛏️ EXPERIENCIA HISTÓRICA</span>
+            <h1 class="festival-title">Tour Minero Especial: Viaje al Corazón de la Plata</h1>
+            <p class="festival-subtitle">Explora la Mina de Acosta y el legado inglés</p>
+            <div class="highlight-box">
+              <p>Descubre la profunda herencia minera de Real del Monte. Adéntrate en la histórica Mina de Acosta, explora sus túneles subterráneos hasta el nivel 120 y maravíllate con la maquinaria antigua y el museo de sitio. Una experiencia que conecta el pasado inglés con la riqueza cultural del presente.</p>
+            </div>
+            <div class="info-card">
+              <h3>💎 Actividades y atractivos principales</h3>
+              <ul>
+                <li><strong>Mina de Acosta:</strong> Descenso a túneles históricos (nivel 120) y visita al museo de sitio restaurado.</li>
+                <li><strong>Historia Minera:</strong> Conoce el trabajo de los mineros y la historia de la plata en la zona.</li>
+                <li><strong>Patrimonio Inglés:</strong> Visitas complementarias sugeridas al Panteón Inglés y Museo del Paste.</li>
+                <li><strong>Cultura Viva:</strong> Recorrido por el Callejón de los Artistas y Mina La Rica.</li>
+              </ul>
+            </div>
+            <div class="tour-gallery">
+              <div class="gallery-item" onclick="openImageModal('https://www.nomadicbackpacker.com/wp-content/uploads/2025/11/acosta-mine-hidalgo-state_orig.jpg', 'Interior de la Mina de Acosta')" style="cursor: pointer;">
+                <img src="https://www.nomadicbackpacker.com/wp-content/uploads/2025/11/acosta-mine-hidalgo-state_orig.jpg" alt="Interior Mina" onerror="this.style.display='none';">
+                <div class="gallery-caption">Interior Mina</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Mina_de_Acosta%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_03.JPG/2560px-Mina_de_Acosta%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_03.JPG', 'Museo de Sitio')" style="cursor: pointer;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Mina_de_Acosta%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_03.JPG/2560px-Mina_de_Acosta%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_03.JPG" alt="Museo de Sitio" onerror="this.style.display='none';">
+                <div class="gallery-caption">Museo de Sitio</div>
+              </div>
+              <div class="gallery-item" onclick="openImageModal('https://www.archivohistoricoymuseodemineria.org/images/minadeacosta2-crop-u84573.jpg?crc=4189064900', 'Maquinaria Antigua')" style="cursor: pointer;">
+                <img src="https://www.archivohistoricoymuseodemineria.org/images/minadeacosta2-crop-u84573.jpg?crc=4189064900" alt="Maquinaria" onerror="this.style.display='none';">
+                <div class="gallery-caption">Maquinaria</div>
+              </div>
+            </div>
+            <div class="info-card">
+              <h3>ℹ️ Información Práctica</h3>
+              <ul>
+                <li><strong>Entrada:</strong> ~$80 MXN (Descuentos para niños, estudiantes e INAPAM).</li>
+                <li><strong>Transporte Público:</strong> ~$30 MXN por viaje redondo.</li>
+                <li><strong>Clima:</strong> Se recomienda ir bien abrigado por el clima frío de la región.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Mina de Acosta, Real del Monte</strong></p>
+              <div onclick="openGoogleMaps(20.14669, -98.66770, 'Mina de Acosta')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 350px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/jyvsisCtj6LjhCZP7" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar a la Mina de Acosta?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="routes-section" id="routes-section">
+          <div class="filters-container">
+            <div class="filter-chip active" onclick="filterRoutes('all')">Todas</div>
+            <div class="filter-chip" onclick="filterRoutes('cercanas')">Cercanas</div>
+            <div class="filter-chip" onclick="filterRoutes('tiempo')">Corta Duración</div>
+            <div class="filter-chip" onclick="filterRoutes('leyendas')">Leyendas</div>
+            <div class="filter-chip" onclick="filterRoutes('mineras')">Mineras</div>
+          </div>
+          <div class="routes-list active" id="list-view">
+            <div class="route-card" onclick="navigateToCallejon()" data-dist="0" data-time="20" data-cat="fotografia">
+              <h3>Callejón de los Artistas</h3>
+              <div class="route-meta"><span>📍 Centro</span> <span>⏱️ 20 min</span> <span>📸 Fotografía</span></div>
+              <p class="route-description">Un callejón lleno de fotos de cine y televisión con una vista espectacular del pueblo.</p>
+            </div>
+            <div class="route-card" onclick="navigateToDetail('panteon')" data-dist="1.2" data-time="45" data-cat="leyendas historia">
+              <h3>Panteón Inglés</h3>
+              <div class="route-meta"><span>📍 1.2 km</span> <span>⏱️ 45 min</span> <span>🎭 Histórica</span></div>
+              <p class="route-description">Descubre la historia de los mineros ingleses y su legado en nuestra comunidad.</p>
+            </div>
+            <div class="route-card" onclick="navigateToParroquia()" data-dist="0" data-time="30" data-cat="religiosa">
+              <h3>Parroquia de Nuestra Señora del Rosario</h3>
+              <div class="route-meta"><span>📍 Centro</span> <span>⏱️ 30 min</span> <span>⛪ Religiosa</span></div>
+              <p class="route-description">Edificio emblemático del siglo XVIII con estilo colonial y neoclásico.</p>
+            </div>
+            <div class="route-card" onclick="navigateToMuseoPaste()" data-dist="0.5" data-time="60" data-cat="gastronomia">
+              <h3>Museo del Paste</h3>
+              <div class="route-meta"><span>📍 Vizcaínas</span> <span>⏱️ 60 min</span> <span>🥟 Gastronómica</span></div>
+              <p class="route-description">Aprende la historia y elabora tu propio paste tradicional.</p>
+            </div>
+            <div class="route-card" onclick="navigateToCasaGrande()" data-dist="0" data-time="45" data-cat="leyendas cultural">
+              <h3>Museo Casa Grande</h3>
+              <div class="route-meta"><span>📍 Centro</span> <span>⏱️ 45 min</span> <span>🏛️ Cultural</span></div>
+              <p class="route-description">Antigua residencia del Conde de Regla, hoy espacio cultural universitario.</p>
+            </div>
+            <div class="route-card" onclick="navigateToMinaAcosta()" data-dist="2.0" data-time="90" data-cat="mineras">
+              <h3>Mina de Acosta</h3>
+              <div class="route-meta"><span>📍 Mineral del Monte</span> <span>⏱️ 90 min</span> <span>⛏️ Minera</span></div>
+              <p class="route-description">Un portal subterráneo que te invita a caminar por la historia y secretos de plata.</p>
+            </div>
+            <div class="route-card" onclick="navigateToBosqueHiloche()" data-dist="3.0" data-time="120" data-cat="naturaleza">
+              <h3>Parque Estatal Bosque El Hiloche</h3>
+              <div class="route-meta"><span>📍 Mineral del Monte</span> <span>⏱️ 120 min</span> <span>🌲 Naturaleza</span></div>
+              <p class="route-description">Refugio natural de 100 hectáreas con senderos, vistas panorámicas y actividades al aire libre.</p>
+            </div>
+            <div class="route-card" onclick="navigateToMercado()" data-dist="0.5" data-time="30" data-cat="gastronomia">
+              <h3>Mercado Jesús Murillo Karam</h3>
+              <div class="route-meta"><span>📍 Ahuizote</span> <span>⏱️ 30 min</span> <span>🥬 Mercado</span></div>
+              <p class="route-description">Productos frescos, comida tradicional y artesanías.</p>
+            </div>
+            <div class="route-card" onclick="navigateToMinaDificultad()" data-dist="2.5" data-time="90" data-cat="mineras">
+              <h3>Mina La Dificultad</h3>
+              <div class="route-meta"><span>📍 Dificultad</span> <span>⏱️ 90 min</span> <span>⚙️ Tecnológica</span></div>
+              <p class="route-description">Centro de interpretación sobre la tecnología de vapor y electricidad en la minería.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="callejon-section" id="callejon-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://paseoporhidalgo.com/wp-content/uploads/2020/04/0c237389-33e8-4f2d-b481-c713d08f3002-819x1024.jpg" alt="Callejón de los Artistas" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Callejón de los Artistas</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.9 (Instagrameable)</span></div>
+            
+            <p class="detail-description">
+              Caminar por las bellas calles de Real del Monte es muy satisfactorio, <strong>¿pero sabías que hay un callejón lleno de fotos?</strong><br><br>
+              Cuando estés dando un paseo disfrutando del clima frío, no olvides pasar por este callejón. Es un espacio que exhibe fotos de <strong>cine y televisión</strong> que se han grabado en este pueblito minero.<br><br>
+              La idea es que mientras vayas recorriendo el lugar te detengas un poco a admirar hechos de los cuales los locales están orgullosos. También, por tener una <strong>vista espectacular del pueblo</strong>, se presta mucho para que tú te tomes miles de fotos y mostrarlas en tu feed de instagram o solo guardarla como un buen recuerdo.
+            </p>
+
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Escenas de Película</p>
+                <p class="audio-duration">Duración: 3:45 min</p>
+              </div>
+            </div>
+
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://rinconesdemexico.com/wp-content/uploads/arquitectura-1024x1024.jpg" onclick="openImageModal(this.src, 'Arquitectura')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://i.pinimg.com/originals/5b/d4/75/5bd4757c4fc497c90f16faa86555a1d7.jpg" onclick="openImageModal(this.src, 'Callejón')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://i.ytimg.com/vi/Mo7q_KYjvIw/maxresdefault.jpg" onclick="openImageModal(this.src, 'Escenas')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://tse4.mm.bing.net/th/id/OIP.W6crsVCmuqj8fmBdz6hpVQHaNK?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3" onclick="openImageModal(this.src, 'Vistas')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.sinpostal.com/wp-content/uploads/RealdelMonteSP-13.jpg" onclick="openImageModal(this.src, 'Detalles')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/97/8e/da/photo1jpg.jpg?w=1100&h=-1&s=1" onclick="openImageModal(this.src, 'Paisaje')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Fernanda L.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">¡El mejor lugar para tomar fotos! La vista del pueblo es inigualable.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Miguel A.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Muy interesante ver cuántas películas se han filmado aquí. Un rincón escondido pero vale la pena.</p>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3>📍 Ubicación</h3>
+              <div onclick="openGoogleMaps(20.1400, -98.6700, 'Callejón de los Artistas')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/emeTR3xksfxM6ZHb7" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">VER EN MAPA</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-section" id="detail-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://paseoporhidalgo.com/wp-content/uploads/2020/04/f8e04de0-8a36-42ce-a00d-33ee8ad9a715-1024x768.jpg" alt="Panteón Inglés" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Panteón Inglés</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.8 (245 reseñas)</span></div>
+            <p class="detail-description">El Panteón Inglés es un sitio histórico único que cuenta la historia de los mineros británicos que llegaron en el siglo XIX. Sus lápidas victorianas y su arquitectura distintiva lo convierten en un lugar de gran valor cultural.</p>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Panteón Inglés</p>
+                <p class="audio-duration">Duración: 8:30 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://paseoporhidalgo.com/wp-content/uploads/2020/04/05d8ea32-459f-42fb-b715-fff163546080.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.vamonosdeviaje.com.mx/wp-content/uploads/2018/02/panteon-ingles.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://d2r4pvg3gvir7a.cloudfront.net/wp-content/uploads/2021/10/real-del-monte-2.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.restauranterealdelmonte.com/wp-content/uploads/2023/04/panteon-ingles-Real-del-Monte02.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://live.staticflickr.com/3835/14214990928_df8ba3180f_b.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://lasillarota.com/u/fotografias/m/2020/10/10/f1280x720-237627_369302_5050.jpg" onclick="openImageModal(this.src, 'Panteón Inglés')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">María González</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Un lugar increíble lleno de historia. La audio guía es muy informativa y emocional.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Carlos Ruiz</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Muy bien conservado. Recomiendo visitarlo temprano para evitar el calor.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Panteón Inglés de Real del Monte</strong></p>
+              <div onclick="openGoogleMaps(20.1435, -98.6675, 'Panteón Inglés de Real del Monte')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/LVZo1JDoTipNJUe76" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar al Panteón Inglés?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="parroquia-section" id="parroquia-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://www.restauranterealdelmonte.com/wp-content/uploads/2023/04/iglesia-rosario-Real-del-Monte.jpg" alt="Parroquia" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Parroquia de Nuestra Señora del Rosario</h1>
+            <div class="detail-rating"><span class="stars">★★★★☆</span> <span class="rating-text">4.7 (150 reseñas)</span></div>
+            <div class="detail-info-block">
+              <h3>📜 Historia</h3>
+              <p><strong>Origen:</strong> La historia de la iglesia se remonta a una construcción primitiva original que comenzó a edificarse en 1563 y se bendijo en 1578, dedicada a Nuestra Señora de la Asunción.</p>
+              <p><strong>El templo actual:</strong> El edificio actual que se encuentra en la plaza principal es una construcción posterior, iniciada en la segunda mitad del siglo XVIII, auspiciada por Pedro Romero de Terreros, un rico minero de la región.</p>
+              <p><strong>Restauraciones:</strong> La parroquia ha pasado por diversas restauraciones a lo largo de los siglos; una de las últimas se realizó en 2004.</p>
+            </div>
+            <div class="detail-info-block">
+              <h3>🏛️ Arquitectura y Características</h3>
+              <ul>
+                <li><strong>Estilo:</strong> El diseño arquitectónico presenta un estilo colonial tradicional.</li>
+                <li><strong>Detalles exteriores:</strong> Destaca un balcón sobre la entrada principal y una imagen de la Virgen de Guadalupe en su fachada.</li>
+                <li><strong>El campanario y el reloj:</strong> La torre del campanario es un elemento distintivo, construida para albergar un reloj que fue una donación de los mineros locales.</li>
+                <li><strong>Doble advocación:</strong> La parroquia es conocida por dos nombres principales: Parroquia de Nuestra Señora del Rosario y Parroquia de Nuestra Señora de la Asunción.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Historia de la Parroquia</p>
+                <p class="audio-duration">Duración: 5:15 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://horariodemisashoy.com/wp-content/uploads/parroquia-nuestra-senora-del-rosario-hidalgo.jpg" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://mr.travelbymexico.com/imgBase/2021/08/realdelmonte.jpg" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.restauranterealdelmonte.com/wp-content/uploads/2023/04/iglesia-rosario-Real-del-Monte02.jpg" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://en-academic.com/pictures/enwiki/73/InsideRosarioChurchRealMonte.JPG" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.vamosaconocer.com/wp-content/uploads/2023/07/DSC_0479-1920x1024.jpg" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://descubreenmexico.com/wp-content/uploads/2021/10/Parroquia_de_la_Asuncion_Real_del_Monte_Hidalgo_Mexico-1024x745.jpg" onclick="openImageModal(this.src, 'Parroquia')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Ana P.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Es hermosa por dentro y por fuera, un lugar lleno de paz y mucha historia.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Luis G.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">La arquitectura colonial es impresionante, vale la pena visitarla.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación y Contacto</h3>
+              <p><strong>Av. Hidalgo 9, Centro, 42130</strong><br>Mineral del Monte, Hgo.<br>📞 +52 771 690 1358</p>
+              <div onclick="openGoogleMaps(20.1395, -98.6720, 'Parroquia de Nuestra Señora del Rosario')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/4xZo3efEVQZcaxxN6" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar a la Parroquia?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="museo-paste-section" id="museo-paste-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://paseoporhidalgo.com/wp-content/uploads/2018/04/c9246d11-bdd7-41f6-ad59-2860a3abf438-1024x1024.jpg" alt="Museo del Paste" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Museo del Paste</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.9 (320 reseñas)</span></div>
+            <p class="detail-description">El Museo del Paste en Real del Monte se encuentra en Av. Juárez #114, Vizcaínas. El museo ofrece recorridos guiados, una sala histórica, una audiovisual y un taller interactivo donde puedes hacer tu propio paste.</p>
+            <div class="detail-info-block">
+              <h3>🕒 Horario, costo y contacto</h3>
+              <ul>
+                <li><strong>Horario:</strong> El museo abre de miércoles a lunes de 10:00 a.m. a 5:00 p.m., con el último recorrido a las 4:30 p.m.</li>
+                <li><strong>Costo:</strong> La entrada general tiene un precio de $60.00 pesos por persona e incluye el recorrido guiado y la elaboración de un paste tradicional.</li>
+                <li><strong>Contacto:</strong> Para reservaciones e información, puedes llamar al 771 797 1548 o enviar un mensaje por WhatsApp al 771 760 9613.</li>
+              </ul>
+            </div>
+            <div class="detail-info-block">
+              <h3>🥟 Qué esperar en el museo</h3>
+              <ul>
+                <li><strong>Historia y elaboración:</strong> El museo exhibe la historia y el origen de este platillo tradicional, introducido por los mineros británicos en el siglo XIX.</li>
+                <li><strong>Talleres interactivos:</strong> Una de las principales atracciones es el taller donde puedes preparar tu propio paste.</li>
+                <li><strong>Recorridos guiados:</strong> La visita está completamente guiada y ofrece una explicación detallada sobre la historia del paste.</li>
+                <li><strong>Salas de exhibición:</strong> El museo cuenta con varias salas que detallan el proceso histórico y la evolución de este platillo.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - El Origen del Paste</p>
+                <p class="audio-duration">Duración: 6:45 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://hidalgo.travel/wp-content/uploads/2025/06/museo_paste1.jpg.webp" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://hidalgo.travel/wp-content/uploads/2025/06/MuseodelPaste2.jpg.webp" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://hidalgo.travel/wp-content/uploads/2025/06/Museo_del_Paste1.jpg.webp" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://hidalgo.travel/wp-content/uploads/2025/06/MINERAL-DEL-MONTE-PASTE-DE-PAPA-scaled-1.jpeg.webp" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://mexicorutamagica.mx/wp-content/uploads/2024/01/real-del-monte-museo-del-paste.jpg" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/fd/8d/7d/exterior.jpg?w=1200&h=-1&s=1" onclick="openImageModal(this.src, 'Museo del Paste')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Sofía M.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">¡Me encantó hacer mi propio paste! Una experiencia súper recomendada.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Jorge T.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Muy interesante conocer la historia minera a través de la comida.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación y Contacto</h3>
+              <p><strong>Av. Juárez #114, Vizcaínas</strong><br>Mineral del Monte, Hgo.</p>
+              <div onclick="openGoogleMaps(20.1375, -98.6690, 'Museo del Paste')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/dvwmrYd6FMEuLmzM7" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar al Museo?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="casa-grande-section" id="casa-grande-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/1200px-Real_del_Monte_35.jpg" alt="Museo Casa Grande" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Museo Casa Grande</h1>
+            <div class="detail-rating"><span class="stars">★★★★☆</span> <span class="rating-text">4.5 (110 reseñas)</span></div>
+            <p class="detail-description">Residencia del legendario conde de Regla. El edificio sirvió como residencia de descanso de Pedro Romero de Terreros, el primer conde de Regla, una de las figuras más adineradas del siglo XVIII en la Nueva España.</p>
+            <div class="detail-info-block">
+              <h3>🏛️ Edificación de estilo neoclásico</h3>
+              <p>Aunque fue una casona del siglo XVIII, el edificio fue terminado con un estilo neoclásico por la Compañía de Aventureros de las Minas. A lo largo de su historia, la Casa Grande ha tenido diversos usos, incluyendo un periodo como oficina principal de la compañía minera.</p>
+            </div>
+            <div class="detail-info-block">
+              <h3>🎨 Espacio cultural de la UAEH</h3>
+              <p>Después de sus años como residencia y oficina, el edificio fue rescatado y rehabilitado por la Universidad Autónoma del Estado de Hidalgo (UAEH) para convertirlo en un espacio cultural. Actualmente alberga exposiciones de estudiantes y docentes de artes visuales.</p>
+            </div>
+            <div class="detail-info-block">
+              <h3>👻 Misterio y leyendas locales</h3>
+              <p>En el municipio se cuentan diversas historias sobre la Casa Grande, una de ellas menciona que, en el lugar, se escondieron tesoros en un pasadizo secreto. En la tradición oral de la región se dice que el edificio está rodeado por un misterio que se ha mantenido por más de dos siglos.</p>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Leyendas de la Casona</p>
+                <p class="audio-duration">Duración: 7:20 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://elinter-net.com/wp-content/uploads/2023/09/Museo-Casa-Grande-Real-del-Monte-1089x640.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://savoteur.com/wp-content/uploads/2023/08/real-del-monte-casa-grande.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.reporte3.mx/wp-content/uploads/857a1da1-918e-4266-8149-0e782df4b631.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.mexicoxp.com/store/tipo_2/contenido/0/16/16445/org_contenido_6915_1_pag16445.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.mexicoxp.com/store/tipo_2/perfil/0/16/16445/org_perfil16445.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.uaeh.edu.mx/rectoria/media/284/portada.jpg" onclick="openImageModal(this.src, 'Museo Casa Grande')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Roberto L.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Imponente arquitectura y las exposiciones siempre valen la pena.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Mariana S.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Se siente la historia en cada rincón, las leyendas le dan un toque especial.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Iturbide 6, Centro</strong><br>Mineral del Monte, Hgo.</p>
+              <div onclick="openGoogleMaps(20.1398, -98.6725, 'Museo Casa Grande')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/eQV2awKtHT3zEGV7A" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar a Casa Grande?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mina-acosta-section" id="mina-acosta-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://th.bing.com/th/id/R.3e59a6558d922b3d8a9ce7d919688bf3?rik=tn8waS008mjohQ&riu=http%3a%2f%2fwww.vamosaconocer.com%2fwp-content%2fuploads%2f2023%2f08%2fDSC_0509-1024x684.jpg&ehk=IzUZKs7QfxWYo0e6g9t8R3dcd8cBos%2b6q%2bivt2o6yoM%3d&risl=&pid=ImgRaw&r=0" alt="Mina de Acosta" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Mina de Acosta</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.8 (210 reseñas)</span></div>
+            <p class="detail-description">Un portal subterráneo que te invita a caminar por la historia. Imagina descender a un mundo oscuro y frío, donde cada túnel de 400 metros susurra secretos de plata y oro. Es un museo de sitio vibrante, donde antiguos mineros, ahora tus guías, te prestan un casco y te sumergen en su mundo, desde 1727 hasta hoy.</p>
+            <div class="detail-info-block">
+              <h3>⛏️ Aventura e Historia</h3>
+              <p>Un descenso auténtico a la oscuridad minera con relatos reales de quienes trabajaron ahí. ¡Descubre el corazón minero de Hidalgo!</p>
+            </div>
+            <div class="detail-info-block">
+              <h3>ℹ️ Resumen Conciso</h3>
+              <ul>
+                <li><strong>Actividad:</strong> Recorrido por un socavón real (400m de largo, hasta 170m de profundidad).</li>
+                <li><strong>Guías:</strong> Antiguos mineros narran la experiencia.</li>
+                <li><strong>Ideal para:</strong> Amantes de la historia, la aventura y la cultura local.</li>
+                <li><strong>Tip:</strong> Abrígate bien, hace frío abajo.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Ecos de la Mina</p>
+                <p class="audio-duration">Duración: 8:00 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://www.guiahidalgo.com.mx/images/minaacosta/mina_de_acosta_2.webp" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://i1.wp.com/revistaaventurero.com.mx/wp-content/uploads/2018/03/ACOSTA-Facebook-Mina-de-Acosta.jpg" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://chicotequila.com/wp-content/uploads/2024/03/actividades-en-real-del-monte-mina-de-acosta.jpg?w=450" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.mexicodesconocido.com.mx/sites/default/files/styles/adaptive/public/museo_sitio_mina_de_acosta_real_del_monte.jpg" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://tipsparatuviaje.com/wp-content/uploads/2016/06/4.-Museo-de-Sitio-Mina-de-Acosta.jpg" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://mexicorutamagica.mx/wp-content/uploads/2024/01/real-del-monte-mina-de-acosta-2048x1362.jpg" onclick="openImageModal(this.src, 'Mina de Acosta')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Ricardo M.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Increíble experiencia bajar a la mina, los guías saben muchísimo.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Elena S.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Muy interesante, pero sí hace bastante frío, lleven chamarra.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Mineral del Monte, Hidalgo.</strong></p>
+              <div onclick="openGoogleMaps(20.1466, -98.6677, 'Mina de Acosta')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/jyvsisCtj6LjhCZP7" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar a la Mina?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bosque-hiloche-section" id="bosque-hiloche-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://guiahidalgo.com.mx/images/Hiloche.webp" alt="Bosque El Hiloche" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Parque Estatal Bosque El Hiloche</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.9 (85 reseñas)</span></div>
+            <p class="detail-description">Refugio natural de casi 100 hectáreas ubicado en Mineral del Monte. Ideal para actividades al aire libre, con senderos para caminar, ciclismo y vistas panorámicas de la zona.</p>
+            <div class="detail-info-block">
+              <h3>ℹ️ Información Esencial</h3>
+              <ul>
+                <li><strong>Horarios:</strong> Lun-Dom, 8:00 - 18:00 hrs.</li>
+                <li><strong>Admisión:</strong> Sin costo específico.</li>
+                <li><strong>Mascotas:</strong> Pet-friendly (con correa).</li>
+                <li><strong>Servicios:</strong> Áreas de descanso. Sin comercios dentro (solo en la entrada).</li>
+              </ul>
+            </div>
+            <div class="detail-info-block">
+              <h3>🌲 Actividades</h3>
+              <ul>
+                <li><strong>Senderismo:</strong> Rutas de 2 km a 10 km.</li>
+                <li><strong>Ciclismo:</strong> Ciclovías disponibles.</li>
+                <li><strong>Picnics:</strong> Áreas designadas y juegos infantiles.</li>
+                <li><strong>Naturaleza:</strong> Observación de aves.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Sonidos del Bosque</p>
+                <p class="audio-duration">Duración: 4:30 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://i.ytimg.com/vi/GHWiU3Lomgc/maxresdefault.jpg" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://mexicorutamagica.mx/wp-content/uploads/2025/10/bosque-hiloche-mineral-del-chico.jpg" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://1.bp.blogspot.com/-SSOC3urzEqc/XaI9qqxGfUI/AAAAAAAABO4/Zbj8DKOX5XQiKnwHVcf3WlkBtgZSjzGuACLcBGAsYHQ/s1600/hiloche.jpg" onerror="this.src='https://via.placeholder.com/150'" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://i.ytimg.com/vi/XaDVOidy0Vs/maxresdefault.jpg" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://osirisfotografia.files.wordpress.com/2016/02/osc_0203.jpg?w=1024" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://cdn-cubimetrix.sfo3.digitaloceanspaces.com/uploads/2024/01/el_hiloche__4_-768x578.jpeg" onclick="openImageModal(this.src, 'Bosque El Hiloche')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Camila R.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Un lugar precioso para desconectar y respirar aire puro. Mis perros lo amaron.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Pedro J.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Excelente para caminar, aunque le faltan algunos señalamientos en los senderos más largos.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación</h3>
+              <p><strong>Mineral del Monte, Hgo.</strong></p>
+              <div onclick="openGoogleMaps(20.1420, -98.6650, 'Bosque El Hiloche')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/tNFam4vTAVBhDAx57" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar al Bosque?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mercado-section" id="mercado-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://th.bing.com/th/id/R.33febf42756eb23a95810950651cfc99?rik=aI2nIe0LKzzNQQ&riu=http%3a%2f%2fai.stanford.edu%2f~latombe%2fmountain%2fphoto%2fmexico%2fmexico-hidalgo_files%2fimage110.jpg&ehk=%2f%2bTio1CI0fkdMFFxwYIo%2fxbGYj5tGeVtJ6%2beeRBY5jo%3d&risl=&pid=ImgRaw&r=0" alt="Mercado Jesús Murillo Karam" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Mercado Jesús Murillo Karam</h1>
+            <div class="detail-rating"><span class="stars">★★★★☆</span> <span class="rating-text">4.2 (50 reseñas)</span></div>
+            <p class="detail-description">Mercado local ubicado en el Barrio de Ahuizote, ideal para encontrar productos frescos y comida auténtica a buen precio.</p>
+            <div class="detail-info-block">
+              <h3>🥬 Servicios y Ofertas</h3>
+              <p>Encontrarás productos frescos y puestos de comida económica. Destaca la <strong>"Cocina doña Eva"</strong> por su sazón y precios accesibles. Es una alternativa más moderna, aunque algunos locales prefieren el mercado tradicional.</p>
+            </div>
+            <div class="detail-info-block">
+              <h3>ℹ️ Información Esencial</h3>
+              <ul>
+                <li><strong>Horario:</strong> Abierto 24 horas (se recomienda verificar disponibilidad de puestos específicos).</li>
+                <li><strong>Accesibilidad:</strong> No cuenta con entrada ni estacionamiento accesible para sillas de ruedas.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Sabores del Mercado</p>
+                <p class="audio-duration">Duración: 3:15 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://live.staticflickr.com/3205/2947694429_8c071c4875_b.jpg" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://periodicolafuente.com/wp-content/uploads/2016/03/RM1.jpg" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://i.ytimg.com/vi/dQtNXNn4QkE/maxresdefault.jpg" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://s3-us-west-1.amazonaws.com/tipsparatuviaje/wp-content/uploads/2016/12/portal-del-comer-rdm.jpg" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.viajabonito.mx/wp-content/uploads/2023/09/tour-real-del-monte-privado-2.2.webp" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://pueblosmagicos.guru/wp-content/uploads/2021/08/Real_de_Monte_07.jpg" onclick="openImageModal(this.src, 'Mercado Jesús Murillo Karam')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Juan D.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Buen lugar para desayunar barato, la cocina de Doña Eva es muy recomendable.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Lucía M.</span> <span class="review-stars">★★★☆☆</span></div>
+                <p class="review-text">Tiene lo básico, pero le falta un poco de mantenimiento comparado con el otro mercado.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación</h3>
+              <p><strong>San Vicente 85, Ahuizote</strong><br>42135 Mineral del Monte, Hgo.</p>
+              <div onclick="openGoogleMaps(20.1380, -98.6730, 'Mercado Jesús Murillo Karam')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/eyqbFQdMJ46Ac6WB8" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar al Mercado?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mina-dificultad-section" id="mina-dificultad-section">
+          <div class="detail-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <img src="https://hidalgo.travel/inicio/museo-de-sitio-y-centro-de-interpretacion-mina-la-dificultad/mina_ladificultad4.jpg" alt="Mina La Dificultad" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div class="detail-content">
+            <h1 class="detail-title">Museo de Sitio Mina La Dificultad</h1>
+            <div class="detail-rating"><span class="stars">★★★★★</span> <span class="rating-text">4.8 (310 reseñas)</span></div>
+            <p class="detail-description">Este museo se centra en la historia minera de la región, destacando como un centro tecnológico clave que albergó la máquina de vapor más potente del país a finales del siglo XIX.</p>
+            <div class="detail-info-block">
+              <h3>🌟 Aspectos Destacados</h3>
+              <ul>
+                <li><strong>Contexto Histórico:</strong> Transición de la era del vapor a la electricidad.</li>
+                <li><strong>Centro de Interpretación:</strong> Sumérgete en el desarrollo de la minería.</li>
+                <li><strong>Exposiciones:</strong> 5 siglos de historia, maquinaria original y vida de los mineros.</li>
+                <li><strong>Recorridos:</strong> Guiados por exmineros (duración 1 a 1.5 hrs).</li>
+              </ul>
+            </div>
+            <div class="detail-info-block">
+              <h3>ℹ️ Información Práctica</h3>
+              <ul>
+                <li><strong>Horarios:</strong> Mar-Jue 9:30-17:30 | Vie-Dom 12:30-17:30 | Lun Cerrado.</li>
+                <li><strong>Costo:</strong> ~$70 MXN (Descuentos estudiantes).</li>
+                <li><strong>Servicios:</strong> Estacionamiento seguro y baños.</li>
+                <li><strong>Accesibilidad:</strong> Acceso para sillas de ruedas en entrada, estacionamiento y baños.</li>
+              </ul>
+            </div>
+            <div class="audio-player">
+              <button class="play-button" onclick="toggleAudio()">▶</button>
+              <div class="audio-info">
+                <p class="audio-title">Audio Guía - Gigantes de Vapor</p>
+                <p class="audio-duration">Duración: 6:10 min</p>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Fotos de la Comunidad</h3>
+              <div class="ugc-gallery">
+                <div class="ugc-image"><img src="https://guiahidalgo.com.mx/images/minadificultad/museo_mina_dificultad_6.webp" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/5d/58/37/photo6jpg.jpg?w=1200&h=1200&s=1" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.101museos.com/cms101/assets/galerias/-ina-a-ificultad-coleccion-minerales-.jpg" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://sic.gob.mx/galeria_imagen/4f79d0dbaf17edesitioycentrodeinterpretaci_nminaladificultad1.JPG.JPG" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://hidalgo.travel/wp-content/uploads/2025/06/mina_ladificultad3.jpg" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                <div class="ugc-image"><img src="https://www.101museos.com/cms101/assets/galerias/-achada-ina-a-ificultad-2-.jpg" onclick="openImageModal(this.src, 'Mina La Dificultad')" style="width: 100%; height: 100%; object-fit: cover;"></div>
+              </div>
+            </div>
+            <div class="ugc-section">
+              <h3>Reseñas Recientes</h3>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Fernando T.</span> <span class="review-stars">★★★★★</span></div>
+                <p class="review-text">Impresionante ver las máquinas de vapor originales. El guía explicó todo perfecto.</p>
+              </div>
+              <div class="review-card">
+                <div class="review-header"><span class="reviewer-name">Claudia R.</span> <span class="review-stars">★★★★☆</span></div>
+                <p class="review-text">Muy educativo y bien conservado. Vale la pena el recorrido guiado.</p>
+              </div>
+            </div>
+            <div class="info-card" style="margin-top: 30px;">
+              <h3>📍 Ubicación y Contacto</h3>
+              <p><strong>Carretera Federal Tampico s/n, Dificultad</strong><br>42130 Mineral del Monte, Hgo.<br>📞 +52 771 715 0976</p>
+              <div onclick="openGoogleMaps(20.1400, -98.6600, 'Mina La Dificultad')" style="cursor: pointer; margin-top: 15px; border-radius: 8px; overflow: hidden; height: 250px; position: relative;">
+                <iframe src="https://maps.app.goo.gl/8SuRUBegMvMMGS1k6" width="100%" height="100%" style="border:0; pointer-events: none; filter: grayscale(20%); opacity: 0.8;" allowfullscreen loading="lazy"></iframe>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 10; background: transparent; display: flex; align-items: center; justify-content: center;">
+                  <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 85%; max-width: 300px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #666; font-weight: 600;">¿Cómo llegar a La Dificultad?</h3>
+                    <button style="background: #f37021; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; width: 100%; margin-bottom: 10px; cursor: pointer; text-transform: uppercase;">CÓMO LLEGAR</button>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #00b4d8; font-size: 18px;">📍</span> Punto de referencia</div>
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚌</span> Transporte colectivo</div>
+                    <div style="padding: 10px 0; text-align: left; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px;"><span style="color: #003566; font-size: 18px;">🚗</span> Automóvil</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="community-section" id="community-section">
+          <div class="detail-content">
+            <h1 class="detail-title">Comunidad</h1>
+            <div id="community-feed">
+              <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <p style="font-size: 18px; margin: 0 0 10px 0; font-weight: 600;">Cargando feed...</p>
+              </div>
+            </div>
+            <button class="camera-btn" onclick="openCamera()">📷 Subir Foto</button>
+          </div>
+        </section>
+
+        <section class="profile-section" id="profile-section">
+          <div class="profile-header">
+            <div class="profile-avatar">👤</div>
+            <h2 class="profile-name">Visitante</h2>
+            <p class="profile-email">Bienvenido a Real del Monte</p>
+          </div>
+          
+          <h3 style="margin: 20px 20px 10px; color: #333;">Mi Experiencia</h3>
+          <div class="stats-container">
+            <div class="stat-card">
+              <div class="stat-number" id="stat-photos">12</div>
+              <div class="stat-label">Fotos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="stat-reviews">5</div>
+              <div class="stat-label">Reseñas</div>
+            </div>
+          </div>
+
+          <h3 style="margin: 20px 20px 10px; color: #333;">Accesibilidad</h3>
+          <div class="accessibility-controls" style="padding: 0 20px; display: flex; gap: 10px;">
+            <button class="access-btn" onclick="toggleFontSize()">A+ Tipografía</button>
+            <button class="access-btn" onclick="toggleContrast()">👁️ Contraste</button>
+          </div>
+
+          <h3 style="margin: 20px 20px 10px; color: #333;">Historial</h3>
+          <div class="history-list" style="padding: 0 20px 20px;">
+            <div class="history-item">
+              <div class="history-icon">✅</div>
+              <div class="history-info">
+                <p class="history-title">Mina de Acosta</p>
+                <p class="history-status">Ruta Completada</p>
+              </div>
+            </div>
+            <div class="history-item">
+              <div class="history-icon">💾</div>
+              <div class="history-info">
+                <p class="history-title">Museo del Paste</p>
+                <p class="history-status">Lugar Guardado</p>
+              </div>
+            </div>
+            <div class="history-item">
+              <div class="history-icon">✅</div>
+              <div class="history-info">
+                <p class="history-title">Panteón Inglés</p>
+                <p class="history-status">Ruta Completada</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active" onclick="showSection('home')">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label" id="nav-home">Inicio</span>
+        </button>
+        <button class="nav-item" onclick="showSection('routes')">
+          <span class="nav-icon">🗺️</span>
+          <span class="nav-label" id="nav-routes">Sitios</span>
+        </button>
+        <button class="nav-item" onclick="showSection('community')">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label" id="nav-community">Comunidad</span>
+        </button>
+        <button class="nav-item" onclick="showSection('profile')">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label" id="nav-profile">Perfil</span>
+        </button>
+      </nav>
+
+      <button class="floating-button" onclick="openUploadModal()">+</button>
+
+      <div class="modal-overlay" id="upload-modal">
+        <div class="modal-content">
+          <button class="modal-close" onclick="closeUploadModal()">×</button>
+          <h2 class="modal-title">Comparte tu experiencia</h2>
+          <form id="upload-form" onsubmit="handleUpload(event)">
+            <div class="form-group">
+              <label for="user-name" class="form-label">Tu nombre</label>
+              <input type="text" id="user-name" class="form-input" placeholder="Ingresa tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label for="location-select" class="form-label">Ubicación</label>
+              <input type="text" id="location-select" class="form-input" placeholder="Dónde tomaste la foto?" required>
+            </div>
+            <div class="form-group">
+              <label for="upload-caption" class="form-label">Descripción</label>
+              <textarea id="upload-caption" class="form-textarea" placeholder="Cuéntanos sobre tu experiencia..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="rating-select" class="form-label">Calificación</label>
+              <select id="rating-select" class="form-input" required>
+                <option value="">Selecciona una calificación</option>
+                <option value="5">★★★★★ Excelente</option>
+                <option value="4">★★★★☆ Muy bueno</option>
+                <option value="3">★★★☆☆ Bueno</option>
+                <option value="2">★★☆☆☆ Regular</option>
+                <option value="1">★☆☆☆☆ Malo</option>
+              </select>
+            </div>
+            <button type="submit" class="submit-button" id="submit-btn">Publicar</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="image-modal">
+        <div class="image-modal-content">
+          <button class="modal-close" onclick="closeImageModal()">×</button>
+          <img id="modal-image" src="" alt="">
+          <p id="modal-image-caption"></p>
+        </div>
+      </div>
+      
+      <div class="toast" id="toast"></div>
+
+    </div>
+  </div>
+
+  <script>
+    // --- DATOS DE RESTAURANTES (16 ítems) ---
+    const restaurants = [
+      { 
+        id: 1, 
+        name: "Pastes El Portal", 
+        type: "Tradicional", 
+        rating: 4.8, 
+        dist: "0.2 km", 
+        image: "https://www.dondeir.com/wp-content/uploads/2024/06/festival-del-paste-2024-en-real-del-monte.jpg", 
+        url: "https://maps.app.goo.gl/pEg1sbZ1Ap42vMmY9",
+        description: "El clásico de clásicos, famoso por su receta tradicional y ubicación céntrica.",
+        reviews: [
+          { user: "Juan P.", text: "Imperdibles si vienes al pueblo." },
+          { user: "Luisa R.", text: "El de papa es el original y el mejor." }
+        ]
+      },
+      { 
+        id: 2, 
+        name: "Pastes Real", 
+        type: "Casero", 
+        rating: 4.6, 
+        dist: "0.5 km", 
+        image: "https://cdn7.kiwilimon.com/recetaimagen/37185/960x640/46748.jpg.jpg", 
+        url: "https://maps.app.goo.gl/bVA7g2tKnwyWyQjk6",
+        description: "Sabor auténtico con un toque casero que te hará sentir como en familia.",
+        reviews: [
+          { user: "Clara M.", text: "La masa es perfecta, ni muy dura ni muy suave. ¡Deliciosos!" },
+          { user: "Pedro S.", text: "Muy buenos precios y excelente sabor." }
+        ]
+      },
+      { 
+        id: 3, 
+        name: "Pastes Real Plateros", 
+        type: "Tradicional", 
+        rating: 4.5, 
+        dist: "1.0 km", 
+        image: "https://laroussecocina.mx/wp-content/uploads/2017/12/pastes-001-larousse-cocina.jpg", 
+        url: "https://maps.app.goo.gl/9fQcR8iG7xoh7oLV7",
+        description: "Reconocidos por su relleno abundante y sazón inigualable en la zona de plateros.",
+        reviews: [
+          { user: "Roberto G.", text: "El de mole verde es una joya escondida. Muy recomendados." },
+          { user: "Ana L.", text: "Siempre calientitos y muy ricos." }
+        ]
+      },
+      { 
+        id: 4, 
+        name: "Pastes Real del Monte", 
+        type: "Familiar", 
+        rating: 4.7, 
+        dist: "0.3 km", 
+        image: "http://userscontent2.emaze.com/images/945affdf-930d-4ddf-a32b-38fa1d9f2ebb/5e5f0907-5ac1-4b81-8381-c632d955f861.jpg", 
+        url: "https://maps.app.goo.gl/41c79yTXHGDHYj8o9",
+        description: "La tradición hecha paste, elaborados con los ingredientes más frescos de la región.",
+        reviews: [
+          { user: "Sofía L.", text: "El servicio es rápido y los pastes siempre están calientitos." },
+          { user: "Jorge M.", text: "El mejor paste de frijol que he probado." }
+        ]
+      },
+      { 
+        id: 5, 
+        name: "Pastes Dificultad", 
+        type: "Regional", 
+        rating: 4.4, 
+        dist: "0.4 km", 
+        image: "https://cdn2.cocinadelirante.com/sites/default/files/images/2023/04/rellenosparapastes.jpg", 
+        url: "https://maps.app.goo.gl/dTG5UpqX7iMxr4zN9",
+        description: "Ubicados cerca de la mina, ideales para recargar energía después de un recorrido.",
+        reviews: [
+          { user: "Miguel A.", text: "Parada obligatoria después de visitar el museo. El de papa es top." },
+          { user: "Lucía F.", text: "Muy buena atención y sabor casero." }
+        ]
+      },
+      { 
+        id: 6, 
+        name: "Pastes Real de Plateros - “La Villa”", 
+        type: "Gourmet", 
+        rating: 4.3, 
+        dist: "0.6 km", 
+        image: "https://www.dondeir.com/wp-content/uploads/2017/09/pastes-1024x767.jpg", 
+        url: "https://maps.app.goo.gl/JQzabpMABgWRA3DbA",
+        description: "Una variante exquisita en un ambiente rústico y acogedor en La Villa.",
+        reviews: [
+          { user: "Patricia R.", text: "Me encantó la variedad de sabores dulces, el de arroz con leche es único." },
+          { user: "Carlos D.", text: "Un lugar muy bonito para comer tranquilo." }
+        ]
+      },
+      { 
+        id: 7, 
+        name: "Pastes Real De Plateros (Plaza Dificultad)", 
+        type: "Céntrico", 
+        rating: 4.5, 
+        dist: "0.2 km", 
+        image: "https://revistaaventurero.com.mx/wp-content/uploads/2019/08/PASTES-facebook-Secretar%C3%ADa-de-turismo-de-M%C3%A9xico.jpg", 
+        url: "https://maps.app.goo.gl/geXL3qykzidm3a6KA",
+        description: "Convenientemente situados en la plaza, perfectos para disfrutar viendo pasar la tarde.",
+        reviews: [
+          { user: "David Z.", text: "Excelente ubicación y el sabor nunca falla. Muy consistentes." },
+          { user: "Elena P.", text: "Rápidos y sabrosos, ideales para llevar." }
+        ]
+      },
+      { 
+        id: 8, 
+        name: "Pastes Dificultad III", 
+        type: "Tradicional", 
+        rating: 4.6, 
+        dist: "0.1 km", 
+        image: "https://i.pinimg.com/originals/eb/e4/ea/ebe4ea8d172c318c48873dc2cc33eef4.jpg", 
+        url: "https://maps.app.goo.gl/DrhwjHLacUyXbEK96",
+        description: "La tercera sucursal de esta famosa cadena local, manteniendo la calidad legendaria.",
+        reviews: [
+          { user: "Elena T.", text: "Igual de buenos que los originales, pero con menos fila. Un acierto." },
+          { user: "Marco A.", text: "El de tinga está espectacular." }
+        ]
+      },
+      { 
+        id: 9, 
+        name: "Pastes La Montaña Real", 
+        type: "Panorámico", 
+        rating: 4.4, 
+        dist: "0.8 km", 
+        image: "https://www.mexicodesconocido.com.mx/sites/default/files/styles/adaptive/public/fichas-destino/pastes-hidalgo-receta.jpg", 
+        url: "https://maps.app.goo.gl/M2upJhqnnQ827UF68",
+        description: "Sabores que elevan tus sentidos, con una vista privilegiada de la montaña.",
+        reviews: [
+          { user: "Jorge H.", text: "La vista desde aquí comiendo un paste de frijol es impagable." },
+          { user: "Sandra V.", text: "Muy ricos y el lugar tiene mucho encanto." }
+        ]
+      },
+      { 
+        id: 10, 
+        name: "Pastes el billar", 
+        type: "Histórico", 
+        rating: 4.7, 
+        dist: "1.5 km", 
+        image: "https://laroussecocina.mx/wp-content/uploads/2023/05/Pastes-de-pina-e1685450464334-1024x823.jpg", 
+        url: "https://maps.app.goo.gl/FgWhA2QVYyqLKCjB6",
+        description: "Un lugar con historia y tradición, donde el paste se combina con el ambiente local.",
+        reviews: [
+          { user: "Lety B.", text: "Un lugar con mucha nostalgia y sabor. El de carne es mi favorito." },
+          { user: "Ricardo M.", text: "Tienen un sabor muy particular, muy recomendados." }
+        ]
+      },
+      { 
+        id: 11, 
+        name: "Pastes Billares Casino Don Fidel", 
+        type: "Local", 
+        rating: 4.2, 
+        dist: "0.3 km", 
+        image: "https://img.chilango.com/2023/04/pastes-CDMX-1200x600.png", 
+        url: "https://maps.app.goo.gl/dbfEH5Cxfdd9FXNZ9",
+        description: "Famosos por su receta secreta y por ser punto de reunión de los locales.",
+        reviews: [
+          { user: "Paco R.", text: "El ambiente es genial y los pastes tienen un sabor muy especial." },
+          { user: "Diana C.", text: "Buen lugar para pasar el rato y comer algo rico." }
+        ]
+      },
+      { 
+        id: 12, 
+        name: "Pastes \"El Minero\"", 
+        type: "Temático", 
+        rating: 4.5, 
+        dist: "0.4 km", 
+        image: "https://cdn.unotv.com/images/2024/10/pan-161239-768x432.jpeg", 
+        url: "https://maps.app.goo.gl/NJPRy7sx9GykTsLY8",
+        description: "Un homenaje gastronómico a los trabajadores de la plata, contundentes y sabrosos.",
+        reviews: [
+          { user: "Carmen S.", text: "Son enormes y llenadores. Realmente quitan el hambre de minero." },
+          { user: "Luis G.", text: "Muy buen sazón, se nota la tradición." }
+        ]
+      },
+      { 
+        id: 13, 
+        name: "Pastes Tejeda", 
+        type: "Clásico", 
+        rating: 4.6, 
+        dist: "2.0 km", 
+        image: "https://img.chilango.com/2023/04/WhatsApp-Image-2023-04-05-at-12.37.55.jpeg", 
+        url: "https://maps.app.goo.gl/NtqFPwzKh94HFzkx5",
+        description: "Una marca de prestigio en la región, sinónimo de calidad y tradición pastelera.",
+        reviews: [
+          { user: "Ricardo V.", text: "Llevo años comprando aquí y nunca decepcionan. Calidad constante." },
+          { user: "Mariana T.", text: "El de cajeta es mi vicio." }
+        ]
+      },
+      { 
+        id: 14, 
+        name: "Pastes El Hiloche", 
+        type: "Campestre", 
+        rating: 4.3, 
+        dist: "3.5 km", 
+        image: "https://th.bing.com/th/id/R.9b1112a96903625f435f39556945d0e8?rik=29kq8822zYwePA&riu=http%3a%2f%2f4.bp.blogspot.com%2f-7y4I5UJKvAk%2fU9D9_4ThIyI%2fAAAAAAAAALM%2fvgt9IsxoOuA%2fs1600%2fPASTES.jpg&ehk=JQnyQeQk536yOo4HxuEfUnViN7KZYGP%2fxXT%2fWKXdZ%2b8%3d&risl=&pid=ImgRaw&r=0", 
+        url: "https://maps.app.goo.gl/8Qon8dJQQ78ihyVq9",
+        description: "Ideales para un picnic, situados cerca del hermoso bosque del mismo nombre.",
+        reviews: [
+          { user: "Gaby N.", text: "Perfectos para llevar al bosque. El de atún es sorprendentemente bueno." },
+          { user: "Oscar R.", text: "Muy frescos y la ubicación es ideal si vas de paseo." }
+        ]
+      },
+      { 
+        id: 15, 
+        name: "Pastes \"El Portal\"", 
+        type: "Icónico", 
+        rating: 4.5, 
+        dist: "0.5 km", 
+        image: "https://cdn.milenio.com/uploads/media/2020/10/16/diversidad-pastes-ofrecen-real-monte.jpeg", 
+        url: "https://maps.app.goo.gl/ZUk3hsidPw8aBZfP7",
+        description: "Ubicación icónica en los portales, donde ver y ser visto mientras disfrutas un paste.",
+        reviews: [
+          { user: "Antonio M.", text: "Clásico de clásicos. Hay que tener paciencia porque se llena." },
+          { user: "Rosa I.", text: "El sabor de siempre, nunca falla." }
+        ]
+      },
+      { 
+        id: 16, 
+        name: "Pastes Mina La Rica", 
+        type: "Histórico", 
+        rating: 4.8, 
+        dist: "0.4 km", 
+        image: "https://www.mexicodesconocido.com.mx/assets/images/destinos/real_del_monte/restaurants/24_HGO_REAL_DEL_MONTE_PASTES_EL_PORTAL_COMENSALES_EN_EL_RESTAURANT_ABIERTO_DESDE_1975_RC.jpg", 
+        url: "https://maps.app.goo.gl/UTppmAGS2prKjEyHA",
+        description: "El sabor de la riqueza minera en cada bocado, ubicados cerca de la antigua mina.",
+        reviews: [
+          { user: "Berenice C.", text: "El mejor cierre para el tour turístico. Muy sabrosos y tradicionales." },
+          { user: "Fernando L.", text: "Excelentes pastes y muy buen servicio." }
+        ]
+      }
+    ];
+
+    // --- RENDERIZADO DE GASTRO ---
+    function renderGastronomy() {
+      const container = document.getElementById('gastronomy-list-container');
+      container.innerHTML = restaurants.map(r => `
+        <div class="resto-card" onclick="openRestaurantModal(${r.id})">
+          <img src="${r.image}" class="resto-image" alt="${r.name}">
+          <div class="resto-info">
+            <h3 class="resto-name">${r.name}</h3>
+            <p class="resto-type">${r.type}</p>
+            <div class="resto-meta">
+              <span class="meta-item"><span class="meta-icon-star">★</span> ${r.rating}</span>
+              <span class="meta-item"><span class="meta-icon-dist">📍</span> ${r.dist}</span>
+            </div>
+          </div>
+          <div class="resto-action">❤</div>
+        </div>
+      `).join('');
+    }
+
+    // --- MODAL DE RESTAURANTE ---
+    function openRestaurantModal(id) {
+      const resto = restaurants.find(r => r.id === id);
+      if (!resto) return;
+
+      // Ocultar todas las secciones y mostrar detalle
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById('restaurant-detail-section').classList.add('active');
+      document.getElementById('content-area').scrollTop = 0;
+
+      // Llenar datos
+      document.getElementById('resto-detail-img').src = resto.image;
+      document.getElementById('resto-detail-title').textContent = resto.name;
+      document.getElementById('resto-detail-stars').textContent = '★'.repeat(Math.floor(resto.rating));
+      document.getElementById('resto-detail-rating-text').textContent = `${resto.rating} (120 reseñas)`;
+      document.getElementById('resto-detail-desc').textContent = resto.description;
+      
+      // Renderizar reseñas específicas
+      const reviewsContainer = document.getElementById('resto-reviews-container');
+      reviewsContainer.innerHTML = resto.reviews.map(rev => `
+        <div class="review-card">
+          <div class="review-header"><span class="reviewer-name">${rev.user}</span> <span class="review-stars">★★★★★</span></div>
+          <p class="review-text">${rev.text}</p>
+        </div>
+      `).join('');
+      
+      // Configurar botón de mapa
+      const mapBtn = document.getElementById('resto-map-btn');
+      mapBtn.onclick = () => window.open(resto.url, '_blank');
+    }
+
+    function goBackToGastro() {
+      document.getElementById('restaurant-detail-section').classList.remove('active');
+      document.getElementById('gastronomy-section').classList.add('active');
+    }
+
+    // --- LÓGICA GENERAL ---
+    // Configuración y Datos Iniciales
+    const defaultConfig = {
+      app_title: "Real del Monte",
+      welcome_text: "Vive la experiencia única del Real del Monte, un pueblo mágico con mucha historia",
+    };
+    
+    // Lista completa de secciones para mostrar/ocultar
+    const allSectionIds = [
+      'home', 'routes', 'gastronomy', 'community', 'profile', 
+      'festival', 'leyendas', 'tour', 'parroquia', 'museo-paste', 
+      'casa-grande', 'mina-acosta', 'bosque-hiloche', 'mercado', 
+      'mina-dificultad', 'callejon', 'detail', 'restaurant-detail'
+    ];
+
+    function showSection(sectionId) {
+      allSectionIds.forEach(id => {
+        const el = document.getElementById(id + '-section');
+        if (el) el.classList.remove('active');
+      });
+      
+      const targetSection = document.getElementById(sectionId + '-section');
+      if (targetSection) targetSection.classList.add('active');
+      
+      // Update nav state
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      const navBtn = document.querySelector(`.nav-item[onclick="showSection('${sectionId}')"]`);
+      // Mapeo simple para activar nav items principales
+      if(sectionId === 'home') document.getElementById('nav-home').parentElement.classList.add('active');
+      if(sectionId === 'routes') document.getElementById('nav-routes').parentElement.classList.add('active');
+      if(sectionId === 'community') document.getElementById('nav-community').parentElement.classList.add('active');
+      if(sectionId === 'profile') document.getElementById('nav-profile').parentElement.classList.add('active');
+      
+      document.getElementById('content-area').scrollTop = 0;
+    }
+
+    // Funciones de navegación específicas (originales)
+    function navigateToFestival() { showSection('festival'); }
+    function navigateToLeyendas() { showSection('leyendas'); }
+    function navigateToTour() { showSection('tour'); }
+    function navigateToCallejon() { showSection('callejon'); }
+    function navigateToParroquia() { showSection('parroquia'); }
+    function navigateToMuseoPaste() { showSection('museo-paste'); }
+    function navigateToCasaGrande() { showSection('casa-grande'); }
+    function navigateToMinaAcosta() { showSection('mina-acosta'); }
+    function navigateToBosqueHiloche() { showSection('bosque-hiloche'); }
+    function navigateToMercado() { showSection('mercado'); }
+    function navigateToMinaDificultad() { showSection('mina-dificultad'); }
+    
+    function navigateToDetail(attraction) {
+       if(attraction === 'panteon') showSection('detail');
+       if(attraction === 'minas') showSection('mina-acosta');
+       if(attraction === 'leyendas') showSection('leyendas');
+    }
+
+    function goBackToHome() { showSection('home'); }
+
+    function goBack() {
+      // Lógica simple para volver a rutas o home
+      const activeSection = document.querySelector('section.active');
+      if (activeSection && (
+          activeSection.id === 'parroquia-section' ||
+          activeSection.id === 'museo-paste-section' ||
+          activeSection.id === 'casa-grande-section' ||
+          activeSection.id === 'mina-acosta-section' ||
+          activeSection.id === 'bosque-hiloche-section' ||
+          activeSection.id === 'mercado-section' ||
+          activeSection.id === 'mina-dificultad-section' ||
+          activeSection.id === 'callejon-section' ||
+          activeSection.id === 'detail-section')) {
+        showSection('routes');
+      } else {
+        showSection('home');
+      }
+    }
+
+    // Filtros de Rutas
+    function filterRoutes(filter) {
+       document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+       event.target.classList.add('active');
+       document.querySelectorAll('.route-card').forEach(card => {
+          const cat = card.dataset.cat || '';
+          const dist = parseFloat(card.dataset.dist || 0);
+          const time = parseInt(card.dataset.time || 0);
+          let show = false;
+          if(filter === 'all') show = true;
+          if(filter === 'cercanas' && dist < 1.5) show = true;
+          if(filter === 'tiempo' && time <= 60) show = true;
+          if(filter === 'leyendas' && cat.includes('leyendas')) show = true;
+          if(filter === 'mineras' && cat.includes('mineras')) show = true;
+          card.style.display = show ? 'block' : 'none';
+       });
+    }
+
+    // Funciones Auxiliares
+    function openImageModal(src, caption) {
+       document.getElementById('image-modal').classList.add('active');
+       document.getElementById('modal-image').src = src;
+       if(caption) document.getElementById('modal-image-caption').textContent = caption;
+    }
+    function closeImageModal() { document.getElementById('image-modal').classList.remove('active'); }
+    
+    function toggleAudio() {
+      const btn = event.target;
+      const isPlaying = btn.textContent === '⏸';
+      btn.textContent = isPlaying ? '▶' : '⏸';
+      showToast(isPlaying ? 'Audio pausado' : 'Reproduciendo audio guía');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    function openGoogleMaps(lat, lng, placeName) {
+       window.open(`https://www.google.com/maps/dir/?api=1&destination=$$${lat},${lng}`, '_blank');
+    }
+
+    // Lógica de Carrusel
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    function showSlides() {
+        const wrapper = document.getElementById('carousel-wrapper');
+        wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        document.querySelectorAll('.indicator').forEach((ind, i) => ind.classList.toggle('active', i === currentSlide));
+        currentSlide = (currentSlide + 1) % 3;
+    }
+    setInterval(showSlides, 5000);
+
+    // Modales de Upload (Simulación)
+    function openUploadModal() { document.getElementById('upload-modal').classList.add('active'); }
+    function closeUploadModal() { document.getElementById('upload-modal').classList.remove('active'); }
+    function handleUpload(e) {
+      e.preventDefault();
+      showToast('¡Publicación compartida con éxito!');
+      closeUploadModal();
+    }
+
+    // Inicializar Gastronomía
+    renderGastronomy();
+
+    // --- NUEVO: DATOS DE COMUNIDAD (12 POSTS) ---
+    const communityPosts = [
+      {
+        user_name: "Valeria_Travels",
+        location: "Panteón Inglés",
+        content: "La neblina en el Panteón Inglés le da un toque místico increíble. ¡Las historias del cuidador son fascinantes!",
+        image: "https://paseoporhidalgo.com/wp-content/uploads/2020/04/f8e04de0-8a36-42ce-a00d-33ee8ad9a715-1024x768.jpg",
+        rating: 5
+      },
+      {
+        user_name: "Chef_Carlos",
+        location: "Pastes El Portal",
+        content: "Nada como un paste de papa calientito en El Portal. El sabor de la tradición se siente en cada mordida.",
+        image: "https://www.dondeir.com/wp-content/uploads/2024/06/festival-del-paste-2024-en-real-del-monte.jpg",
+        rating: 5
+      },
+      {
+        user_name: "Senderista_Hgo",
+        location: "Bosque El Hiloche",
+        content: "Mañana de caminata en El Hiloche. El olor a pino y la frescura del aire son la mejor terapia.",
+        image: "https://guiahidalgo.com.mx/images/Hiloche.webp",
+        rating: 5
+      },
+      {
+        user_name: "Historia_Viva",
+        location: "Mina de Acosta",
+        content: "Bajamos 400 metros en la Mina de Acosta. Es impresionante imaginar el trabajo de los mineros hace siglos.",
+        image: "https://th.bing.com/th/id/R.3e59a6558d922b3d8a9ce7d919688bf3?rik=tn8waS008mjohQ&riu=http%3a%2f%2fwww.vamosaconocer.com%2fwp-content%2fuploads%2f2023%2f08%2fDSC_0509-1024x684.jpg&ehk=IzUZKs7QfxWYo0e6g9t8R3dcd8cBos%2b6q%2bivt2o6yoM%3d&risl=&pid=ImgRaw&r=0",
+        rating: 5
+      },
+      {
+        user_name: "Familia_Gomez",
+        location: "Plaza Principal",
+        content: "Disfrutando en familia en la plaza principal. ¡El clima está perfecto para un café de olla!",
+        image: "https://upload.wikimedia.org/wikipedia/commons/7/7a/Plaza_Principal%2C_Real_del_Monte%2C_Hidalgo%2C_M%C3%A9xico%2C_2013-10-10%2C_DD_01.JPG",
+        rating: 4
+      },
+      {
+        user_name: "Artsy_Lau",
+        location: "Callejón de los Artistas",
+        content: "Me encantaron las fotos del Callejón de los Artistas. ¡Tantas películas grabadas aquí que no sabía!",
+        image: "https://paseoporhidalgo.com/wp-content/uploads/2020/04/0c237389-33e8-4f2d-b481-c713d08f3002-819x1024.jpg",
+        rating: 5
+      },
+      {
+        user_name: "Mochilero_Mx",
+        location: "Mina La Dificultad",
+        content: "La maquinaria en La Dificultad es imponente. Una joya de la ingeniería del siglo XIX.",
+        image: "https://hidalgo.travel/inicio/museo-de-sitio-y-centro-de-interpretacion-mina-la-dificultad/mina_ladificultad4.jpg",
+        rating: 5
+      },
+      {
+        user_name: "Devoto_Juan",
+        location: "Parroquia del Rosario",
+        content: "La arquitectura de la Parroquia es hermosa. Un lugar lleno de paz en medio del pueblo.",
+        image: "https://www.restauranterealdelmonte.com/wp-content/uploads/2023/04/iglesia-rosario-Real-del-Monte.jpg",
+        rating: 4
+      },
+      {
+        user_name: "Foodie_RealdelMonte",
+        location: "Mercado Jesús Murillo",
+        content: "Desayunando barbacoa en el mercado. ¡Sabor auténtico y precios excelentes!",
+        image: "https://th.bing.com/th/id/R.33febf42756eb23a95810950651cfc99?rik=aI2nIe0LKzzNQQ&riu=http%3a%2f%2fai.stanford.edu%2f~latombe%2fmountain%2fphoto%2fmexico%2fmexico-hidalgo_files%2fimage110.jpg&ehk=%2f%2bTio1CI0fkdMFFxwYIo%2fxbGYj5tGeVtJ6%2beeRBY5jo%3d&risl=&pid=ImgRaw&r=0",
+        rating: 4
+      },
+      {
+        user_name: "Cultura_Fan",
+        location: "Museo del Paste",
+        content: "Hice mi propio paste en el museo. ¡No quedó tan bonito pero sabe delicioso!",
+        image: "https://paseoporhidalgo.com/wp-content/uploads/2018/04/c9246d11-bdd7-41f6-ad59-2860a3abf438-1024x1024.jpg",
+        rating: 5
+      },
+      {
+        user_name: "Leyendas_Nocturnas",
+        location: "Recorrido Nocturno",
+        content: "El recorrido de leyendas me puso la piel chinita. ¡El monje que se aparece es aterrador!",
+        image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/7c/d9/8a/caption.jpg?w=1800&h=1400&s=1",
+        rating: 5
+      },
+      {
+        user_name: "Estudiante_UAEH",
+        location: "Museo Casa Grande",
+        content: "La exposición en Casa Grande está muy interesante. El edificio por sí solo vale la visita.",
+        image: "https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/1200px-Real_del_Monte_35.jpg",
+        rating: 4
+      }
+    ];
+
+    function renderCommunityFeed() {
+      const feedContainer = document.getElementById('community-feed');
+      feedContainer.innerHTML = communityPosts.map(post => {
+        const stars = '★'.repeat(post.rating);
+        return `
+          <div class="feed-card">
+            <div class="feed-header">
+              <div class="user-avatar">${post.user_name.charAt(0)}</div>
+              <div class="feed-user-info">
+                <p class="feed-user-name">${post.user_name}</p>
+                <p class="feed-location">${post.location}</p>
+              </div>
+            </div>
+            <div class="feed-image" style="background-image: url('${post.image}'); background-size: cover; background-position: center;"></div>
+            <div class="feed-content">
+              <div style="color: #ffc107; font-size: 14px; margin-bottom: 5px;">${stars}</div>
+              <p class="feed-text">${post.content}</p>
+              <div class="feed-actions">
+                <span class="feed-action">❤️ Me gusta</span>
+                <span class="feed-action">💬 Comentar</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- FUNCIÓN DEL BOTÓN DE CÁMARA (AGREGADO) ---
+    function openCamera() {
+      showToast("Se está abriendo la cámara...");
+    }
+
+    // --- FUNCIÓNES DE ACCESIBILIDAD (AGREGADO) ---
+    function toggleFontSize() {
+      document.body.classList.toggle('large-font');
+    }
+
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+    }
+
+    // Inicializar Feeds
+    renderCommunityFeed();
+
+  </script>
+</body>
+</html>
